@@ -5,8 +5,9 @@
  * @format
  */
 
-import React from 'react';
+import React, {Component, useState} from 'react';
 import type {PropsWithChildren} from 'react';
+import * as translator from '@parvineyvazov/json-translator';
 import {
   ImageBackground,
   SafeAreaView,
@@ -24,15 +25,11 @@ type SectionProps = PropsWithChildren<{
   title: string;
 }>;
 
-const NewsLog = async () => {
+const NewsLog = async (): Promise<string> => {
   return new Promise(async (resolve, reject) => {
-    const url = 'https://google-news-api1.p.rapidapi.com/search?language=ES';
+    const url = 'https://riad-news-api.vercel.app/api/news';
     const options = {
       method: 'GET',
-      headers: {
-        'X-RapidAPI-Key': '3162d08377mshce5a033df3425f3p18c42djsn3d58dce5b4d6',
-        'X-RapidAPI-Host': 'google-news-api1.p.rapidapi.com',
-      },
     };
 
     try {
@@ -84,12 +81,13 @@ function Header({title = '', description = ''}): JSX.Element {
   );
 }
 function App(): JSX.Element {
+  let [news, setNews] = useState({status: 'loading', data: []});
   const isDarkMode = useColorScheme() === 'dark';
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
-  NewsLog();
+
   return (
     <SafeAreaView style={backgroundStyle}>
       <StatusBar
@@ -103,6 +101,7 @@ function App(): JSX.Element {
           title="ONews"
           description="La actualidad en tus manos rapidamente"
         />
+        {}
       </ScrollView>
     </SafeAreaView>
   );
