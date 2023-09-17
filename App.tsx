@@ -8,6 +8,7 @@
 import React from 'react';
 import type {PropsWithChildren} from 'react';
 import {
+  ImageBackground,
   SafeAreaView,
   ScrollView,
   StatusBar,
@@ -17,17 +18,34 @@ import {
   View,
 } from 'react-native';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+import {Colors} from 'react-native/Libraries/NewAppScreen';
 
 type SectionProps = PropsWithChildren<{
   title: string;
 }>;
+
+const NewsLog = async () => {
+  return new Promise(async (resolve, reject) => {
+    const url = 'https://google-news-api1.p.rapidapi.com/search?language=ES';
+    const options = {
+      method: 'GET',
+      headers: {
+        'X-RapidAPI-Key': '3162d08377mshce5a033df3425f3p18c42djsn3d58dce5b4d6',
+        'X-RapidAPI-Host': 'google-news-api1.p.rapidapi.com',
+      },
+    };
+
+    try {
+      const response = await fetch(url, options);
+      const result = await response.text();
+      console.log(result);
+      resolve(result);
+    } catch (error) {
+      console.error(error);
+      reject(error);
+    }
+  });
+};
 
 function Section({children, title}: SectionProps): JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
@@ -55,13 +73,23 @@ function Section({children, title}: SectionProps): JSX.Element {
   );
 }
 
+function Header({title = '', description = ''}): JSX.Element {
+  return (
+    <ImageBackground source={require('./assets/icons/header.png')}>
+      <View style={headerS.header}>
+        <Text style={headerS.headerTitle}>{title}</Text>
+        <Text style={headerS.headerDescription}>{description}</Text>
+      </View>
+    </ImageBackground>
+  );
+}
 function App(): JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
-
+  NewsLog();
   return (
     <SafeAreaView style={backgroundStyle}>
       <StatusBar
@@ -71,26 +99,10 @@ function App(): JSX.Element {
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
         style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
+        <Header
+          title="ONews"
+          description="La actualidad en tus manos rapidamente"
+        />
       </ScrollView>
     </SafeAreaView>
   );
@@ -112,6 +124,36 @@ const styles = StyleSheet.create({
   },
   highlight: {
     fontWeight: '700',
+  },
+});
+const headerS = StyleSheet.create({
+  header: {
+    flex: 1,
+    height: 220,
+    alignContent: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    textAlign: 'center',
+    fontSize: 40,
+    backgroundColor: '#e2e2e2aa',
+    flex: 0,
+    width: 160,
+    alignSelf: 'center',
+    borderRadius: 20,
+    color: '#212121',
+    marginVertical: 8,
+    paddingVertical: 5,
+  },
+  headerDescription: {
+    fontSize: 20,
+    backgroundColor: '#e2e2e2aa',
+    color: '#333',
+    width: 300,
+    alignSelf: 'center',
+    textAlign: 'center',
+    borderRadius: 20,
+    paddingVertical: 10,
   },
 });
 
