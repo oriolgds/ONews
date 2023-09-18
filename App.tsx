@@ -5,27 +5,18 @@
  * @format
  */
 
-import React, {useState, useEffect} from 'react';
-import type {PropsWithChildren} from 'react';
-import {Appearance} from 'react-native';
+import React, {useState, useEffect, useRef} from 'react';
 import {
   FlatList,
   Image,
   ImageBackground,
-  SafeAreaView,
-  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
-  useColorScheme,
   View,
+  Animated,
+  Appearance,
 } from 'react-native';
-
-import {Colors} from 'react-native/Libraries/NewAppScreen';
-
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
 
 const NewsLog = async (): Promise<string> => {
   return new Promise(async (resolve, reject) => {
@@ -46,39 +37,19 @@ const NewsLog = async (): Promise<string> => {
   });
 };
 
-function Section({children, title}: SectionProps): JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
-
+let headerAnim: {height: any; opacity: any};
 function Header({title = '', description = ''}): JSX.Element {
   return (
     <ImageBackground source={require('./assets/icons/header.png')}>
-      <View style={headerS.header}>
+      <Animated.View
+        style={{
+          ...headerS.header,
+          height: headerAnim.height,
+          opacity: headerAnim.opacity,
+        }}>
         <Text style={headerS.headerTitle}>{title}</Text>
         <Text style={headerS.headerDescription}>{description}</Text>
-      </View>
+      </Animated.View>
     </ImageBackground>
   );
 }
@@ -107,41 +78,56 @@ function App(): JSX.Element {
       setNews(JSON.parse(await NewsLog()));
     })();
   }, []);
-  let keyExtractor = 0;
+  let keyExtractor = 1;
+  headerAnim = {
+    height: useRef(new Animated.Value(200)).current,
+    opacity: useRef(new Animated.Value(1)).current,
+  };
+  function flatListOnScroll(e: {nativeEvent: {contentOffset: {y: number}}}) {
+    if (e.nativeEvent.contentOffset.y > 30) {
+      // Hiding header
+      Animated.timing(headerAnim.height, {
+        toValue: 50,
+        duration: 100,
+        useNativeDriver: false,
+      }).start();
+      Animated.timing(headerAnim.opacity, {
+        toValue: 0,
+        duration: 100,
+        useNativeDriver: false,
+      }).start();
+    } else {
+      // Showing header
+      Animated.timing(headerAnim.height, {
+        toValue: 200,
+        duration: 100,
+        useNativeDriver: false,
+      }).start();
+      Animated.timing(headerAnim.opacity, {
+        toValue: 1,
+        duration: 100,
+        useNativeDriver: false,
+      }).start();
+    }
+  }
+
   return (
-    <SafeAreaView style={backgroundStyle}>
+    <View style={backgroundStyle}>
       <StatusBar
         barStyle={isDarkMode ? 'light-content' : 'dark-content'}
         backgroundColor={backgroundStyle.backgroundColor}
       />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header
-          title="ONews"
-          description="La actualidad en tus manos rapidamente"
-        />
-
-        {news.page.items.map((item, index) => (
-          <View style={newS.card} key={index}>
-            {item.anteTitle != null ? (
-              <Text style={newS.anteTitle}>{item.anteTitle}</Text>
-            ) : null}
-            {item.image != null ? (
-              <Image
-                source={{
-                  uri: item.image,
-                }}
-                style={newS.image}
-              />
-            ) : null}
-            <Text style={newS.title}>{item.title}</Text>
-          </View>
-        ))}
-      </ScrollView>
       <FlatList
+        initialNumToRender={3}
         data={news.page.items}
         key={keyExtractor}
+        ListHeaderComponent={
+          <Header
+            title="ONews"
+            description="La actualidad en tus manos rapidamente"
+          />
+        }
+        onScroll={flatListOnScroll}
         renderItem={item => {
           console.log(keyExtractor);
           keyExtractor++;
@@ -163,28 +149,10 @@ function App(): JSX.Element {
           );
         }}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
 const newS = StyleSheet.create({
   card: {
     backgroundColor: '#e2e2e2',
@@ -211,6 +179,8 @@ const headerS = StyleSheet.create({
   header: {
     flex: 1,
     height: 220,
+    width: '100%',
+    alignItems: 'center',
     alignContent: 'center',
     justifyContent: 'center',
   },
