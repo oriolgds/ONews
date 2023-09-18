@@ -5,10 +5,11 @@
  * @format
  */
 
-import React, {Component, useState, useEffect} from 'react';
+import React, {useState, useEffect} from 'react';
 import type {PropsWithChildren} from 'react';
-import * as translator from '@parvineyvazov/json-translator';
+import {Appearance} from 'react-native';
 import {
+  FlatList,
   Image,
   ImageBackground,
   SafeAreaView,
@@ -85,19 +86,28 @@ function Header({title = '', description = ''}): JSX.Element {
 function App(): JSX.Element {
   let [news, setNews] = useState({
     status: 'loading',
-    data: [{title: '', description: ''}],
+    page: {
+      items: [
+        {
+          anteTitle: null,
+          title: null,
+          image: null,
+          id: null,
+        },
+      ],
+    },
   });
-  const isDarkMode = useColorScheme() === 'dark';
-
+  const colorScheme = Appearance.getColorScheme();
+  const isDarkMode = colorScheme === 'dark';
   const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+    backgroundColor: isDarkMode ? '#212121' : '#fff',
   };
   useEffect(() => {
     (async () => {
       setNews(JSON.parse(await NewsLog()));
     })();
   }, []);
-
+  let keyExtractor = 0;
   return (
     <SafeAreaView style={backgroundStyle}>
       <StatusBar
@@ -111,13 +121,48 @@ function App(): JSX.Element {
           title="ONews"
           description="La actualidad en tus manos rapidamente"
         />
-        {news.data.map((item, index) => (
+
+        {news.page.items.map((item, index) => (
           <View style={newS.card} key={index}>
-            <Text>{item.title}</Text>
-            <Text>{item.description}</Text>
+            {item.anteTitle != null ? (
+              <Text style={newS.anteTitle}>{item.anteTitle}</Text>
+            ) : null}
+            {item.image != null ? (
+              <Image
+                source={{
+                  uri: item.image,
+                }}
+                style={newS.image}
+              />
+            ) : null}
+            <Text style={newS.title}>{item.title}</Text>
           </View>
         ))}
       </ScrollView>
+      <FlatList
+        data={news.page.items}
+        key={keyExtractor}
+        renderItem={item => {
+          console.log(keyExtractor);
+          keyExtractor++;
+          return (
+            <View style={newS.card}>
+              {item.item.anteTitle != null ? (
+                <Text style={newS.anteTitle}>{item.item.anteTitle}</Text>
+              ) : null}
+              {item.item.image != null ? (
+                <Image
+                  source={{
+                    uri: item.item.image,
+                  }}
+                  style={newS.image}
+                />
+              ) : null}
+              <Text style={newS.title}>{item.item.title}</Text>
+            </View>
+          );
+        }}
+      />
     </SafeAreaView>
   );
 }
@@ -142,8 +187,24 @@ const styles = StyleSheet.create({
 });
 const newS = StyleSheet.create({
   card: {
-    height: 100,
-    width: '100%',
+    backgroundColor: '#e2e2e2',
+    margin: 10,
+    padding: 10,
+    borderRadius: 20,
+  },
+  anteTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  title: {
+    fontSize: 17,
+    textAlign: 'justify',
+  },
+  image: {
+    height: 160,
+    borderRadius: 8,
+    marginBottom: 5,
   },
 });
 const headerS = StyleSheet.create({
