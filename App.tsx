@@ -5,10 +5,11 @@
  * @format
  */
 
-import React, {Component, useState} from 'react';
+import React, {Component, useState, useEffect} from 'react';
 import type {PropsWithChildren} from 'react';
 import * as translator from '@parvineyvazov/json-translator';
 import {
+  Image,
   ImageBackground,
   SafeAreaView,
   ScrollView,
@@ -27,7 +28,7 @@ type SectionProps = PropsWithChildren<{
 
 const NewsLog = async (): Promise<string> => {
   return new Promise(async (resolve, reject) => {
-    const url = 'https://riad-news-api.vercel.app/api/news';
+    const url = 'https://www.rtve.es/api/noticias';
     const options = {
       method: 'GET',
     };
@@ -80,13 +81,22 @@ function Header({title = '', description = ''}): JSX.Element {
     </ImageBackground>
   );
 }
+
 function App(): JSX.Element {
-  let [news, setNews] = useState({status: 'loading', data: []});
+  let [news, setNews] = useState({
+    status: 'loading',
+    data: [{title: '', description: ''}],
+  });
   const isDarkMode = useColorScheme() === 'dark';
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
+  useEffect(() => {
+    (async () => {
+      setNews(JSON.parse(await NewsLog()));
+    })();
+  }, []);
 
   return (
     <SafeAreaView style={backgroundStyle}>
@@ -101,7 +111,12 @@ function App(): JSX.Element {
           title="ONews"
           description="La actualidad en tus manos rapidamente"
         />
-        {}
+        {news.data.map((item, index) => (
+          <View style={newS.card} key={index}>
+            <Text>{item.title}</Text>
+            <Text>{item.description}</Text>
+          </View>
+        ))}
       </ScrollView>
     </SafeAreaView>
   );
@@ -123,6 +138,12 @@ const styles = StyleSheet.create({
   },
   highlight: {
     fontWeight: '700',
+  },
+});
+const newS = StyleSheet.create({
+  card: {
+    height: 100,
+    width: '100%',
   },
 });
 const headerS = StyleSheet.create({
