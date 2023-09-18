@@ -23,6 +23,9 @@ const NewsLog = async (): Promise<string> => {
     const url = 'https://www.rtve.es/api/noticias';
     const options = {
       method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
     };
 
     try {
