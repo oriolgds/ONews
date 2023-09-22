@@ -16,6 +16,7 @@ import {
   View,
   Animated,
   Appearance,
+  TouchableOpacity,
 } from 'react-native';
 
 const NewsLog = async (): Promise<string> => {
@@ -67,6 +68,7 @@ function App(): JSX.Element {
           title: null,
           image: null,
           id: null,
+          htmlUrl: null,
         },
       ],
     },
@@ -134,21 +136,26 @@ function App(): JSX.Element {
         renderItem={item => {
           console.log(keyExtractor);
           keyExtractor++;
+          const openLink = () => {
+            console.log(item.item.htmlUrl);
+          };
           return (
-            <View style={newS.card}>
-              {item.item.anteTitle != null ? (
-                <Text style={newS.anteTitle}>{item.item.anteTitle}</Text>
-              ) : null}
-              {item.item.image != null ? (
-                <Image
-                  source={{
-                    uri: item.item.image,
-                  }}
-                  style={newS.image}
-                />
-              ) : null}
-              <Text style={newS.title}>{item.item.title}</Text>
-            </View>
+            <TouchableOpacity onPress={openLink} activeOpacity={0.5}>
+              <View style={newS.card}>
+                {item.item.anteTitle != null ? (
+                  <Text style={newS.anteTitle}>{item.item.anteTitle}</Text>
+                ) : null}
+                {item.item.image != null ? (
+                  <Image
+                    source={{
+                      uri: item.item.image,
+                    }}
+                    style={newS.image}
+                  />
+                ) : null}
+                <Text style={newS.title}>{item.item.title}</Text>
+              </View>
+            </TouchableOpacity>
           );
         }}
       />
