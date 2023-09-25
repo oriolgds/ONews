@@ -1,4 +1,11 @@
 {
   "name": "ONews",
-  "displayName": "ONews"
+  "displayName": "ONews",
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "8c5c0130-144e-4f13-9de9-5f717fd39506"
+      }
+    }
+  }
 }
